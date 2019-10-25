@@ -21,6 +21,7 @@ odoo.define('custom_gantt.CustomGanttRenderer', function (require) {
             gantt.config.duration_unit = "day";
             gantt.config.initial_scroll = false;
             gantt.config.preserve_scroll = true;
+            gantt.config.show_links = true
             gantt.config.columns = [
                 {
                     name: "text",
@@ -298,13 +299,76 @@ odoo.define('custom_gantt.CustomGanttRenderer', function (require) {
                         'consolidation_exclude': self.consolidation_exclude || null,
                         'color': task.task_color || 0,
                         'index': gantt_tasks.length,
+                        'dependencies': task.dependent_task_ids,
                     });
+                    console.log(task.dependent_task_ids)
                 }
             };
             _.each(groups, function (group) { generate_tasks(group, 0); });
 
             this._ganttContainer(gantt_tasks);
             this._configureGanttChart(tasks, grouped_by, gantt_tasks);
+        },
+        _ganttContainer: function (ganttTasks) {
+            // horrible hack to make sure that something is in the dom with the required id.  The problem is that
+            // the action manager renders the view in a document fragment. More explaination : GED
+            var temp_div_with_id;
+            if (this.$div_with_id){
+                temp_div_with_id = this.$div_with_id;
+            }
+            this.$div_with_id = $('<div>').attr('id', this.chart_id);
+            this.$div_with_id.wrap('<div></div>');
+            this.$div = this.$div_with_id.parent();
+            this.$div.prependTo(document.body);
+
+            // Initialize the gantt chart
+            while (this.gantt_events.length) {
+                gantt.detachEvent(this.gantt_events.pop());
+            }
+            this._scaleZoom(this.state.scale);
+            gantt.init(this.chart_id);
+            gantt._click.gantt_row = undefined; // Remove the focus on click
+
+            gantt.clearAll();
+            gantt.showDate(this.state.focus_date);
+            gantt.parse({"data": ganttTasks});
+            gantt.sort(function (a, b){
+                if (gantt.hasChild(a.id) && !gantt.hasChild(b.id)){
+                    return -1;
+                } else if (!gantt.hasChild(a.id) && gantt.hasChild(b.id)) {
+                    return 1;
+                } else if (a.index > b.index) {
+                    return 1;
+                } else if (a.index < b.index) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
+
+
+            gantt.eachTask(function (task) {
+                if (task.dependencies) {
+                    console.log(task.id)
+                    var c;
+                    for (c in task.dependencies) {
+                        var link_id = gantt.addLink({
+                            id: c.id,
+                            source:"gantt_task_" + task.dependencies[c],
+                            target:task.id,
+                            type:gantt.config.links.finish_to_start
+                        });
+                    } 
+                }
+            });
+
+            // End of horrible hack
+            var scroll_state = gantt.getScrollState();
+            this.$el.empty();
+            this.$el.append(this.$div.contents());
+            gantt.scrollTo(scroll_state.x, scroll_state.y);
+            this.$div.remove();
+            if (temp_div_with_id) temp_div_with_id.remove();
         },
     });
 });

@@ -13,7 +13,8 @@ odoo.define('custom_gantt.GanttModel', function (require) {
 
             if (this.modelName === 'project.task') {
                 fields.push('user_name');
-                fields.push('task_color')
+                fields.push('task_color');
+                fields.push('dependent_task_ids');
             }
             return this._rpc({
                     model: this.modelName,

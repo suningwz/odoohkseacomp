@@ -9,5 +9,6 @@
     'depends': ['project'],
     'data': [
         'views/assets.xml',
+        'views/task.xml',
     ],
 }
