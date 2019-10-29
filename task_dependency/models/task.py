@@ -40,6 +40,19 @@ class Task(models.Model):
             raise UserError('Cannot have a negative duration!')
 
         res = super(Task,self).write(vals)
+        for rec in self:
+            if rec.parent_id:
+                subtasks = self.env['project.task'].search([('parent_id','=',rec.parent_id.id)])
+                start_date = [task.starting_date for task in subtasks if task.starting_date]
+                if start_date:
+                    start_date = min(start_date)
+                end_date = [task.expected_completion for task in subtasks if task.expected_completion]
+                if end_date:
+                    end_date = max(end_date)
+                if end_date and start_date:
+                    delta = end_date - start_date
+                    if delta != rec.parent_id.expected_duration:
+                        rec.parent_id.expected_duration = delta.days
 
         if 'dependent_task_ids' in vals:
             for rec in self:
@@ -55,7 +68,7 @@ class Task(models.Model):
                 parents = rec.get_parents(rec)
                 for p in parents:
                     dates = [task.expected_completion for task in p.dependent_task_ids if task.expected_completion]
-                    if dates:
+                    if dates and p.starting_date != max(dates):
                         p.starting_date = max(dates)
 
         return res
