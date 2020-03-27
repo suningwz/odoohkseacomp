@@ -22,3 +22,9 @@ class saleOrderLine(models.Model):
                 # margin_new
                 if line.price_subtotal:
                     line.margin_new = line.profit_loss / line.price_subtotal
+
+    @api.multi
+    def open_supply_chain_report(self):
+        [action] = self.env.ref('supply_chain_report_jsi.action_stock_move_supply_chain_report_jsi').read()
+        action['context'] = dict(safe_eval(action.get('context')), active_id=self.product_id.id, search_default_product_id=self.product_id.id)
+        return action
