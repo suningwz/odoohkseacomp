@@ -10,6 +10,8 @@ class saleOrderLine(models.Model):
     cost_total = fields.Float('Total Cost', compute="_compute_costing", store="True")
     profit_loss = fields.Float('Profit / Loss', compute="_compute_costing", store="True")
     margin_new = fields.Float('Margin', compute="_compute_costing", store="True")
+    remaining_qty = fields.Float('Remaining Qty', compute="_compute_remaining_qty", store="True")
+
 
     @api.depends('product_uom_qty', 'purchase_price')
     def _compute_costing(self):
@@ -22,6 +24,11 @@ class saleOrderLine(models.Model):
                 # margin_new
                 if line.price_subtotal:
                     line.margin_new = line.profit_loss / line.price_subtotal
+
+    @api.depends('product_uom_qty', 'qty_delivered')
+    def _compute_remaining_qty(self):
+        for line in self:
+            line.remaining_qty = line.product_uom_qty - line.qty_delivered
 
     @api.multi
     def open_supply_chain_report(self):
