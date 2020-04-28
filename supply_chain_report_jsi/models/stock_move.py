@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError, ValidationError
 
 
 class StockMove(models.Model):
@@ -11,7 +12,13 @@ class StockMove(models.Model):
     calc_forecasted_qty = fields.Float('Warehouse Forecasted', compute="_compute_qty", store="True")
     run_total = fields.Float('Run Total', compute="_compute_qty", store="True")
     comment = fields.Text('Comments')
-    date_internal_transfer = fields.Date('Commitment date')
+    date_internal_transfer = fields.Date('Internal Transfer Date')
+
+    @api.constrains('date_internal_transfer')
+    def check_internal_transfer_date(self):
+        for record in self:
+            if not(record.purchase_line_id or record.sale_line_id or record.date_internal_transfer):
+                raise ValidationError(_("Internal Transfer Date is required!"))
 
     @api.depends('date_internal_transfer', 'sale_line_id.x_studio_confirmed_delivery_date', 'purchase_line_id.date_planned', 'picking_id.backorder_id')
     def _compute_commitment_date(self):
