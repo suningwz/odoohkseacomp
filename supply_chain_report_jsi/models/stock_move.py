@@ -20,7 +20,6 @@ class StockMove(models.Model):
             if not(record.purchase_line_id or record.sale_line_id or record.date_internal_transfer):
                 raise ValidationError(_("Internal Transfer Date is required!"))
 
-
     @api.depends('date_internal_transfer', 'sale_line_id.x_studio_confirmed_delivery_date', 'purchase_line_id.date_planned', 'picking_id.backorder_id')
     def _compute_commitment_date(self):
         for move in self:
