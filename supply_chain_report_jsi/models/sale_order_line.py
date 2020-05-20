@@ -7,28 +7,29 @@ from odoo.tools import safe_eval
 class saleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
+    remaining_qty = fields.Float('Remaining Qty', compute="_compute_remaining_qty", store="True")
     cost_total = fields.Float('Total Cost', compute="_compute_costing", store="True")
+    sales_total = fields.Float('Total Sales', compute="_compute_costing", store="True")
     profit_loss = fields.Float('Profit / Loss', compute="_compute_costing", store="True")
     margin_new = fields.Float('Margin', compute="_compute_costing", store="True")
-    remaining_qty = fields.Float('Remaining Qty', compute="_compute_remaining_qty", store="True")
-
-
-    @api.depends('product_uom_qty', 'purchase_price')
-    def _compute_costing(self):
-        for line in self:
-            if line.product_uom_qty:
-                # cost_total
-                line.cost_total = line.product_uom_qty * line.purchase_price
-                # profit_loss
-                line.profit_loss = line.price_subtotal - line.cost_total
-                # margin_new
-                if line.price_subtotal:
-                    line.margin_new = line.profit_loss / line.price_subtotal
 
     @api.depends('product_uom_qty', 'qty_delivered')
     def _compute_remaining_qty(self):
         for line in self:
             line.remaining_qty = line.product_uom_qty - line.qty_delivered
+
+    @api.depends('price_subtotal', 'purchase_price', 'remaining_qty')
+    def _compute_costing(self):
+        for line in self:
+            # cost_total
+            line.cost_total = line.purchase_price * line.remaining_qty
+            # cost_total
+            line.sales_total = line.price_unit * line.remaining_qty
+            # profit_loss
+            line.profit_loss = line.sales_total - line.cost_total
+            # margin_new
+            if line.price_subtotal:
+                line.margin_new = line.profit_loss / line.price_subtotal
 
     @api.multi
     def open_supply_chain_report(self):
