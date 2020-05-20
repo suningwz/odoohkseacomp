@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//tree" position="inside">
                     <field name="cost_total"/>
+                    <field name="sales_total"/>
                     <field name="profit_loss"/>
                     <field name="margin_new"/>
                     <button name="open_supply_chain_report" type="object" string="Supply Chain" class="btn"/>
