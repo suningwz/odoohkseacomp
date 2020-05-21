@@ -56,3 +56,25 @@ class StockMove(models.Model):
                 move_in_qty = sum(moves_in.filtered(lambda x: x.commitment_date.strftime('%Y-%m-%d') <= move.commitment_date.strftime('%Y-%m-%d')).mapped('product_uom_qty'))
                 move_out_qty = sum(moves_out.filtered(lambda x: x.commitment_date.strftime('%Y-%m-%d') <= move.commitment_date.strftime('%Y-%m-%d')).mapped('product_uom_qty'))
                 move.run_total = move.calc_on_hand_qty - move_out_qty + move_in_qty
+
+class StockPicking(models.Model):
+    _inherit = "stock.picking"
+
+    date_internal_transfer_new = fields.Date('New Transfer Date')
+
+    @api.multi
+    def action_update_transfer_date(self):
+        self.ensure_one()
+        if self.date_internal_transfer_new:
+            self.move_ids_without_package.write({'date_internal_transfer': self.date_internal_transfer_new})
+
+class MrpProduction(models.Model):
+    _inherit = "mrp.production"
+
+    date_internal_transfer_new = fields.Date('New Transfer Date')
+
+    @api.multi
+    def action_update_transfer_date(self):
+        self.ensure_one()
+        if self.date_internal_transfer_new:
+            self.move_raw_ids.write({'date_internal_transfer': self.date_internal_transfer_new})
