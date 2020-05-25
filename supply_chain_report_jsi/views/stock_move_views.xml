@@ -65,21 +65,6 @@
 
         <menuitem action="action_stock_move_supply_chain_report_jsi" id="menu_action_stock_move_supply_chain_report_jsi" parent="stock.menu_warehouse_report" sequence="140"/>
 
-        <record id="mrp_production_form_view_supply_chain_report_jsi" model="ir.ui.view">
-            <field name="name">mrp.production.form.view.supply.chain.report.jsi</field>
-            <field name="model">mrp.production</field>
-            <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='routing_id']" position="after">
-                    <label for="date_internal_transfer_new"/>
-                    <div>
-                        <field name="date_internal_transfer_new"/>
-                        <button name="action_update_transfer_date" type="object" string="Update Transfer date" help="This changes the Internal Transfer date of all move lines to the given date" class="o_icon_button oe_edit_only"/>
-                    </div>
-                </xpath>
-            </field>
-        </record>
-
         <record id="view_picking_form_supply_chain_report_jsi" model="ir.ui.view">
             <field name="name">view.picking.form.supply.chain.report.jsi</field>
             <field name="model">stock.picking</field>

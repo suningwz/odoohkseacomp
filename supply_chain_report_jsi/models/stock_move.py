@@ -17,7 +17,7 @@ class StockMove(models.Model):
     @api.constrains('date_internal_transfer')
     def check_internal_transfer_date(self):
         for record in self:
-            if not(record.purchase_line_id or record.sale_line_id or record.date_internal_transfer):
+            if not(record.production_id or record.purchase_line_id or record.sale_line_id or record.date_internal_transfer):
                 raise ValidationError(_("Internal Transfer Date is required!"))
 
     @api.depends('date_internal_transfer', 'sale_line_id.x_studio_confirmed_delivery_date', 'purchase_line_id.date_planned', 'picking_id.backorder_id')
@@ -68,13 +68,3 @@ class StockPicking(models.Model):
         if self.date_internal_transfer_new:
             self.move_ids_without_package.write({'date_internal_transfer': self.date_internal_transfer_new})
 
-class MrpProduction(models.Model):
-    _inherit = "mrp.production"
-
-    date_internal_transfer_new = fields.Date('New Transfer Date')
-
-    @api.multi
-    def action_update_transfer_date(self):
-        self.ensure_one()
-        if self.date_internal_transfer_new:
-            self.move_raw_ids.write({'date_internal_transfer': self.date_internal_transfer_new})
