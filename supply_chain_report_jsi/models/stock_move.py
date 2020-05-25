@@ -67,4 +67,3 @@ class StockPicking(models.Model):
         self.ensure_one()
         if self.date_internal_transfer_new:
             self.move_ids_without_package.write({'date_internal_transfer': self.date_internal_transfer_new})
-
