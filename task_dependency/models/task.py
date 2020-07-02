@@ -11,7 +11,7 @@ class Task(models.Model):
 
     starting_date = fields.Date(string='Start Date',required=True,default=fields.Date.context_today)
     expected_duration = fields.Integer(default=1, required=True)
-    expected_completion = fields.Date(compute="get_expected_completion",readonly=True,store=True)
+    expected_completion = fields.Date(compute="get_expected_completion",store=True,readonly=True)
     dependent_task_ids = fields.Many2many('project.task', relation='rel_project_task_project_task', column1='child_task_id', column2='parent_task_id')
 
     @api.depends('expected_duration','starting_date')
@@ -29,7 +29,7 @@ class Task(models.Model):
             dates = [task.expected_completion for  task in res.dependent_task_ids if task.expected_completion]
             if dates:
                 new_start_date = max(dates)
-                if new_start_date > res.starting_date:
+                if new_start_date != res.starting_date:
                     res.starting_date = new_start_date
 
         return res
@@ -40,6 +40,19 @@ class Task(models.Model):
             raise UserError('Cannot have a negative duration!')
 
         res = super(Task,self).write(vals)
+        for rec in self:
+            if rec.parent_id:
+                subtasks = self.env['project.task'].search([('parent_id','=',rec.parent_id.id)])
+                start_date = [task.starting_date for task in subtasks if task.starting_date]
+                if start_date:
+                    start_date = min(start_date)
+                end_date = [task.expected_completion for task in subtasks if task.expected_completion]
+                if end_date:
+                    end_date = max(end_date)
+                if end_date and start_date:
+                    delta = end_date - start_date
+                    if delta != rec.parent_id.expected_duration:
+                        rec.parent_id.expected_duration = delta.days
 
         if 'dependent_task_ids' in vals:
             for rec in self:
@@ -47,7 +60,7 @@ class Task(models.Model):
                     dates = [task.expected_completion for  task in rec.dependent_task_ids if task.expected_completion]
                     if dates:
                         new_start_date = max(dates)
-                        if new_start_date > rec.starting_date:
+                        if new_start_date != rec.starting_date:
                             rec.starting_date = new_start_date
 
         if 'starting_date' in vals or 'expected_duration' in vals:
@@ -55,7 +68,7 @@ class Task(models.Model):
                 parents = rec.get_parents(rec)
                 for p in parents:
                     dates = [task.expected_completion for task in p.dependent_task_ids if task.expected_completion]
-                    if dates:
+                    if dates and p.starting_date != max(dates):
                         p.starting_date = max(dates)
 
         return res
@@ -65,7 +78,7 @@ class Task(models.Model):
         dates = [task.expected_completion for  task in self.dependent_task_ids if task.expected_completion]
         if dates:
             new_start_date = max(dates)
-            if not self.starting_date or (new_start_date > self.starting_date):
+            if new_start_date != self.starting_date:
                 self.starting_date = new_start_date
 
     @api.multi

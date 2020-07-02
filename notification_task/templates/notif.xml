@@ -1,0 +1,10 @@
+<odoo>
+	<template id="seacomp_custom_notif" inherit_id="mail.message_notification_email">
+		<xpath expr="//p[@t-if='subtype.internal']" position="before">
+			<p t-if="message.model == 'project.task'" style="padding: 5px; margin-bottom: 16px;">
+            	<t t-set="project_name" t-value="request.env['project.task'].search([('id', '=', message.res_id)]).project_id.name"/>
+            	<t t-esc="'Project: ' + project_name"/>
+        	</p>
+		</xpath>
+	</template>
+</odoo>
