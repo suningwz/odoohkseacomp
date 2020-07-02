@@ -20,7 +20,7 @@
             				    <field name="project_id" readonly="1"/>
             				    <field name="user_id" readonly="1"/>
             				    <field name="starting_date" readonly="1"/>
-                        <field name="expected_duration" readonly="1"/>
+                                <field name="expected_duration" readonly="1"/>
             				    <field name="expected_completion" readonly="1"/>
             				    <field name="stage_id" readonly="1"/>
             				  </tree>
