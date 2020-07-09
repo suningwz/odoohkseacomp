@@ -6,6 +6,7 @@
     'category': 'Project Management',
     'description': """
     """,
+    'version': '1.0',
     'depends': ['project',],
     'data': [
         'views/assets.xml',
