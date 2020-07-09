@@ -6,7 +6,8 @@
     'category': 'Project Management',
     'description': """
     """,
-    'depends': ['project', 'studio_customization'],
+    'version': '1.0',
+    'depends': ['project',],
     'data': [
         'views/assets.xml',
         'views/task.xml',
