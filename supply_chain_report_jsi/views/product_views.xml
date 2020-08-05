@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="product_tmpl_form_view_supply_chain_report_button_jsi">
+            <field name="name">product.tmpl.form.view.supply.chain.report.button.jsi</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <div name="button_box" position="inside">
+                    <button class="oe_stat_button" name="open_supply_chain_report"
+                        type="object" icon="fa-bar-chart">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_text">Supply Chain</span>
+                        </div>
+                    </button>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>
