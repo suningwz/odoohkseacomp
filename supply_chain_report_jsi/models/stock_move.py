@@ -30,7 +30,7 @@ class StockMove(models.Model):
             else:
                 move.commitment_date = fields.Date.to_string(move.date_internal_transfer)
 
-    @api.depends('commitment_date', 'warehouse_id', 'picking_type_id.warehouse_id', 'product_id.qty_available')
+    @api.depends('product_uom_qty', 'commitment_date', 'warehouse_id', 'picking_type_id.warehouse_id', 'product_id.qty_available')
     def _compute_qty(self):
         for move in self:
             warehouse = move.warehouse_id
