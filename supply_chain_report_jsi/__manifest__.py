@@ -13,6 +13,7 @@
         'views/stock_move_views.xml',
         'views/sale_order_line_views.xml',
         'views/product_views.xml',
+        'views/picking_type_views.xml',
         'actions/base_automation.xml',
     ],
 }

@@ -4,6 +4,12 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
 
+class StockPickingType(models.Model):
+    _inherit = "stock.picking.type"
+
+    check_transfer_date = fields.Boolean(string="Ignore Transfer Date")
+
+
 class StockMove(models.Model):
     _inherit = "stock.move"
 
@@ -16,8 +22,14 @@ class StockMove(models.Model):
 
     @api.constrains('date_internal_transfer')
     def check_internal_transfer_date(self):
+        # TODO: need to refactor, can we simply go with picking type?
         for record in self:
-            if not(record.workorder_id or record.production_id or record.purchase_line_id or record.sale_line_id or record.date_internal_transfer):
+            if not(move.workorder_id \
+                   or move.production_id \
+                   or move.purchase_line_id \
+                   or move.sale_line_id \
+                   or move.picking_type_id.check_transfer_date \
+                   or move.date_internal_transfer):
                 raise ValidationError(_("Internal Transfer Date is required!"))
 
     @api.depends('date_internal_transfer', 'sale_line_id.x_studio_confirmed_delivery_date', 'purchase_line_id.date_planned', 'picking_id.backorder_id')
@@ -28,7 +40,7 @@ class StockMove(models.Model):
             elif move.purchase_line_id:
                 move.commitment_date = fields.Date.to_string(move.purchase_line_id.date_planned)
             else:
-                move.commitment_date = fields.Date.to_string(move.date_internal_transfer)
+                move.commitment_date = move.date_internal_transfer and fields.Date.to_string(move.date_internal_transfer) or False
 
     @api.depends('product_uom_qty', 'commitment_date', 'warehouse_id', 'picking_type_id.warehouse_id', 'product_id.qty_available')
     def _compute_qty(self):
