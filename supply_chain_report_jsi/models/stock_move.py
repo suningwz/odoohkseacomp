@@ -23,7 +23,7 @@ class StockMove(models.Model):
     @api.constrains('date_internal_transfer')
     def check_internal_transfer_date(self):
         # TODO: need to refactor, can we simply go with picking type?
-        for record in self:
+        for move in self:
             if not(move.workorder_id \
                    or move.production_id \
                    or move.purchase_line_id \
