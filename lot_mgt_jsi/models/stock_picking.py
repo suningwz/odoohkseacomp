@@ -15,6 +15,8 @@ class StockPicking(models.Model):
 
     lot_name = fields.Char("Lot Name")
     existing_lot_id = fields.Many2one('stock.production.lot', 'Existing Lot')
+    show_existing_lot_button = fields.Boolean(string="Show Button for add Existing Lot", related='picking_type_id.show_existing_lot_button',
+        readonly=True)
  
     def button_add_lot(self):
         if self.lot_name:
