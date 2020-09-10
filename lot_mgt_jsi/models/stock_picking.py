@@ -7,7 +7,9 @@ from odoo import api, fields, models
 class StockPickingType(models.Model):
     _inherit = "stock.picking.type"
 
-    show_existing_lot_button = fields.Boolean(string="Show Button for add Existing Lot")
+    show_existing_lot_button = fields.Boolean(string="Show button for add existing Lot")
+    show_add_lot_button = fields.Boolean(string="Show button for add lot name")
+    copy_lot_from_purchase = fields.Boolean(string="Copy lot name from purchase")
 
 
 class StockPicking(models.Model):
@@ -15,19 +17,21 @@ class StockPicking(models.Model):
 
     lot_name = fields.Char("Lot Name")
     existing_lot_id = fields.Many2one('stock.production.lot', 'Existing Lot')
-    show_existing_lot_button = fields.Boolean(string="Show Button for add Existing Lot", related='picking_type_id.show_existing_lot_button',
-        readonly=True)
+    show_existing_lot_button = fields.Boolean(string="Show button for add existing lot", related='picking_type_id.show_existing_lot_button', readonly=True)
+    show_add_lot_button = fields.Boolean(string="Show button for add lot name", related='picking_type_id.show_add_lot_button', readonly=True)
  
     def button_add_lot(self):
-        if self.lot_name:
-            self.write({'move_line_nosuggest_ids': [(0, 0, {
-                                                            'picking_id':self.id, \
-                                                            'product_id': line.product_id.id, \
-                                                            'qty_done': line.product_uom_qty, \
-                                                            'product_uom_id': line.product_uom.id, \
-                                                            'location_id': line.location_id.id, \
-                                                            'location_dest_id': line.location_dest_id.id, \
-                                                            'lot_name': self.lot_name}) for line in self.move_ids_without_package]})
+        if self.lot_name and self.move_line_ids_without_package:
+            self.move_line_ids_without_package.write({'lot_name': self.lot_name})
+            
+#             self.write({'move_line_nosuggest_ids': [(0, 0, {
+#                                                             'picking_id':self.id, \
+#                                                             'product_id': line.product_id.id, \
+#                                                             'qty_done': line.product_uom_qty, \
+#                                                             'product_uom_id': line.product_uom.id, \
+#                                                             'location_id': line.location_id.id, \
+#                                                             'location_dest_id': line.location_dest_id.id, \
+#                                                             'lot_name': self.lot_name}) for line in self.move_ids_without_package]})
 
     def button_add_existing_lot(self):
         if self.existing_lot_id:
