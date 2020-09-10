@@ -8,7 +8,9 @@
             <field name="inherit_id" ref="stock.view_picking_type_form"/>
             <field name="arch" type="xml">
                 <field name="show_operations" position="before">
+                    <field name="show_add_lot_button"/>
                     <field name="show_existing_lot_button"/>
+                    <field name="copy_lot_from_purchase"/>
                 </field>
             </field>
         </record>
@@ -31,10 +33,11 @@
             <field name="arch" type="xml">
                 <field name="origin" position="after">
                     <field name="show_existing_lot_button" invisible="1"/>
-                    <label for="lot_name"/>
+                    <field name="show_add_lot_button" invisible="1"/>
+                    <label for="lot_name" attrs="{'invisible': [('show_add_lot_button', '=', False)]}"/>
                     <div>
-                        <field name="lot_name" class="oe_inline"/>
-                        <button name="button_add_lot" type="object" string="Add Lot" class="oe_link oe_edit_only"/>
+                        <field name="lot_name" class="oe_inline" attrs="{'invisible': [('show_add_lot_button', '=', False)], 'readonly': [('state', 'in', ['done', 'cancel'])]}"/>
+                        <button name="button_add_lot" type="object" string="Add Lot" class="oe_link oe_edit_only" attrs="{'invisible': ['|', ('show_add_lot_button', '=', False), ('state', 'in', ['done', 'cancel'])]}"/>
                     </div>
                     <label for="existing_lot_id" attrs="{'invisible': [('show_existing_lot_button', '=', False)]}"/>
                     <div>

@@ -12,6 +12,6 @@ class PurchaseOrder(models.Model):
     @api.model
     def _prepare_picking(self):
         res = super(PurchaseOrder, self)._prepare_picking()
-        if self.picking_type_id.id == self.env.ref('__export__.stock_picking_type_21_9ba29550', raise_if_not_found=False):
+        if self.picking_type_id.copy_lot_from_purchase:
             res['lot_name'] = self.lot_name
         return res
