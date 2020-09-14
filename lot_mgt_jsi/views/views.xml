@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_picking_type_form_lot_mgt_jsi" model="ir.ui.view">
+            <field name="name">view.picking.type.form.lot.mgt.jsi</field>
+            <field name="model">stock.picking.type</field>
+            <field name="inherit_id" ref="stock.view_picking_type_form"/>
+            <field name="arch" type="xml">
+                <field name="show_operations" position="before">
+                    <field name="show_add_lot_button"/>
+                    <field name="show_existing_lot_button"/>
+                    <field name="copy_lot_from_purchase"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="purchase_order_form_lot_mgt_jsi" model="ir.ui.view">
+            <field name="name">purchase.order.form.lot.mgt.jsi</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <field name="origin" position="after">
+                    <field name="lot_name"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_picking_form_lot_mgt_jsi" model="ir.ui.view">
+            <field name="name">view.picking.form.lot.mgt.jsi</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <field name="origin" position="after">
+                    <field name="show_existing_lot_button" invisible="1"/>
+                    <field name="show_add_lot_button" invisible="1"/>
+                    <label for="lot_name" attrs="{'invisible': [('show_add_lot_button', '=', False)]}"/>
+                    <div>
+                        <field name="lot_name" class="oe_inline" attrs="{'invisible': [('show_add_lot_button', '=', False)], 'readonly': [('state', 'in', ['done', 'cancel'])]}"/>
+                        <button name="button_add_lot" type="object" string="Add Lot" class="oe_link oe_edit_only" attrs="{'invisible': ['|', ('show_add_lot_button', '=', False), ('state', 'in', ['done', 'cancel'])]}"/>
+                    </div>
+                    <label for="existing_lot_id" attrs="{'invisible': [('show_existing_lot_button', '=', False)]}"/>
+                    <div>
+                        <field name="existing_lot_id" attrs="{'invisible': [('show_existing_lot_button', '=', False)], 'readonly': [('state', 'in', ['done', 'cancel'])]}" class="oe_inline"/>
+                        <button name="button_add_existing_lot" type="object" class="ml16 oe_link oe_edit_only" string="Add Existing Lot" attrs="{'invisible': [('show_existing_lot_button', '=', False), ('state', 'in', ['done', 'cancel'])]}"/>
+                    </div>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>
