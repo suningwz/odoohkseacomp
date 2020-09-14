@@ -41,8 +41,8 @@
                     </div>
                     <label for="existing_lot_id" attrs="{'invisible': [('show_existing_lot_button', '=', False)]}"/>
                     <div>
-                        <field name="existing_lot_id" attrs="{'invisible': [('show_existing_lot_button', '=', False)]}" class="oe_inline"/>
-                        <button name="button_add_existing_lot" type="object" class="oe_link oe_edit_only" string="Add Existing Lot" attrs="{'invisible': [('show_existing_lot_button', '=', False)]}"/>
+                        <field name="existing_lot_id" attrs="{'invisible': [('show_existing_lot_button', '=', False), 'readonly': [('state', 'in', ['done', 'cancel']]}" class="oe_inline"/>
+                        <button name="button_add_existing_lot" type="object" class="ml16 oe_link oe_edit_only" string="Add Existing Lot" attrs="{'invisible': [('show_existing_lot_button', '=', False), ('state', 'in', ['done', 'cancel'])]}"/>
                     </div>
                 </field>
             </field>
