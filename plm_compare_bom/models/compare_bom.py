@@ -60,6 +60,7 @@ class plm_missing_bom(osv.osv.osv_memory):
     _name = "plm.missing.bom"
     _description = "BoM Missing Objects"
 
+    depth = fields.Integer('Depth')
     bom_id = fields.Many2one('plm.compare.bom', _('BoM'), ondelete='cascade')
     bom_idrow = fields.Many2one('mrp.bom.line', _('BoM Line'), ondelete='cascade')
     part_id = fields.Many2one('product.product', _('Part'), ondelete='cascade')
@@ -100,6 +101,7 @@ class plm_adding_bom(osv.osv.osv_memory):
     _name = "plm.adding.bom"
     _description = "BoM Adding Objects"
 
+    depth = fields.Integer('Depth')
     bom_id = fields.Many2one('plm.compare.bom', _('BoM'), ondelete='cascade')
     bom_idrow = fields.Many2one('mrp.bom.line', _('BoM Line'), ondelete='cascade')
     part_id = fields.Many2one('product.product', _('Part'), ondelete='cascade')
@@ -251,31 +253,43 @@ class plm_compare_bom(osv.osv.osv_memory):
         res['compute_type'] = 'only_product'
         return res
 
+    def _computeBomLines(self, bomLineBrws, bomDict, keyType=None, depth=0):
+        productId = bomLineBrws.product_id.id
+        bomLineQty = bomLineBrws.product_qty
+        createVals = {'depth': depth,
+                      'part_id': bomLineBrws.product_id.id,
+                      'itemqty': bomLineQty,
+                      'itemnum': bomLineBrws.itemnum,
+                      'bom_idrow': bomLineBrws.id,
+                      'reason': '',
+                      'bom_id': self.id,
+                      'revision': bomLineBrws.product_id.engineering_revision,
+                      }
+        if keyType == 'num_qty':
+            key = '%s_%s_%s' % (bomLineBrws.product_id.id, bomLineBrws.itemnum, bomLineQty)
+        else:
+            key = productId
+        if key not in bomDict:
+            bomDict[key] = [createVals]
+        else:
+            if keyType == 'summarize':
+                bomDict[key][0]['itemqty'] = bomDict[key][0]['itemqty'] + bomLineQty
+            else:
+                bomDict[key].append(createVals)
+        bomDict.update(self.computeBomChildLines(bomLineBrws, keyType, depth + 1))
+
     @api.model
-    def computeBomLines(self, bomBrws, keyType=None):
+    def computeBomLines(self, bomBrws, keyType=None, depth=0):
         bomDict = {}
         for bomLineBrws in bomBrws.bom_line_ids:
-            productId = bomLineBrws.product_id.id
-            bomLineQty = bomLineBrws.product_qty
-            createVals = {'part_id': bomLineBrws.product_id.id,
-                          'itemqty': bomLineQty,
-                          'itemnum': bomLineBrws.itemnum,
-                          'bom_idrow': bomLineBrws.id,
-                          'reason': '',
-                          'bom_id': self.id,
-                          'revision': bomLineBrws.product_id.engineering_revision,
-                          }
-            if keyType == 'num_qty':
-                key = '%s_%s_%s' % (bomLineBrws.product_id.id, bomLineBrws.itemnum, bomLineQty)
-            else:
-                key = productId
-            if key not in bomDict:
-                bomDict[key] = [createVals]
-            else:
-                if keyType == 'summarize':
-                    bomDict[key][0]['itemqty'] = bomDict[key][0]['itemqty'] + bomLineQty
-                else:
-                    bomDict[key].append(createVals)
+            self._computeBomLines(bomLineBrws, bomDict, keyType, depth)
+        return bomDict
+
+    @api.model
+    def computeBomChildLines(self, bomBrws, keyType=None, depth=1):
+        bomDict = {}
+        for bomLineBrws in bomBrws.child_line_ids:
+            self._computeBomLines(bomLineBrws, bomDict, keyType, depth)
         return bomDict
 
     def getLeftBomObj(self, toCreateVals):

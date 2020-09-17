@@ -23,7 +23,7 @@
 		            <button string="Cancel" class="oe_link" special="cancel"/>
 		          </footer>
                 </form>
-                
+
             </field>
         </record>
 
@@ -49,7 +49,7 @@
                 <field name="bom_are_equal" invisible="True"/>
                 <div style="text-align: left; font-size: 18px"
                      attrs="{'invisible': [('bom_are_equal','=', False)]}">
-                    <span class="fa fa-exclamation-triangle" 
+                    <span class="fa fa-exclamation-triangle"
                           style="color:blu;width:100%;text-align:left;font-size:60px"></span>
                     <br/>Attention: The two bom are equal  !!
                 </div>
@@ -60,7 +60,7 @@
                           style="color:red;width:100%;text-align:left;font-size:60px"></span>
                     <br/>Attention: there are some change you need to save it !!
                     <button type="object" name="update_bom" icon="fa-save"/>
-                </div>                
+                </div>
                 <group col="16" colspan="4">
 	                <group col="4" colspan="4">
 	                	<field name="bom_id1" readonly="True"/>
@@ -89,6 +89,7 @@
                                             string="Delete Left"
                                             class="oe_stat_button"
                                             icon="fa-trash-o"/>
+               	                    <field name="depth"/>
                	                    <field name="itemnum" select="True"/>
                                     <field name="bom_idrow" groups="base.group_no_one"/>
                                     <field name="part_id" select="True"/>
@@ -105,7 +106,7 @@
                                             type="object"
                                             string="Move Left"
                                             class="oe_stat_button"
-                                            icon="fa-angle-double-right"/>                                        
+                                            icon="fa-angle-double-right"/>
                	             </tree>
                	        </field>
                     </group>
@@ -125,6 +126,7 @@
                                             string="Move Left"
                                             class="oe_stat_button"
                                             icon="fa-angle-double-left"/>
+               	                    <field name="depth"/>
                  		        <field name="itemnum" select="True"/>
                                     <field name="bom_idrow" groups="base.group_no_one"/>
                                     <field name="part_id" select="True"/>
@@ -137,7 +139,7 @@
                                             string="Delete Left"
                                             class="oe_stat_button"
                                             icon="fa-trash-o"/>
-                            </tree>  
+                            </tree>
                         </field>
              		</group>
          		</group>
