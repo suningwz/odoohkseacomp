@@ -23,7 +23,6 @@ class MrpProduction(models.Model):
             # by jsi
             values['procurement_group_id'] = self.env["procurement.group"].create({'mh_tracking_no': values['mh_tracking_no'], 'name': values['name']}).id
         production = super(MrpProduction, self).create(values)
-        production._generate_moves()
         return production
 
     @api.one
