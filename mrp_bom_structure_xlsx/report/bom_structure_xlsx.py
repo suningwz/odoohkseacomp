@@ -20,9 +20,8 @@ class BomStructureXlsx(models.AbstractModel):
         sheet.write(i, 2, ch.product_id.default_code or '')
         sheet.write(i, 3, ', '.join([route.name for route in ch.product_id.route_ids]) or '')
         sheet.write(i, 4, ch.x_description or '')
-        sheet.write(i, 5, ch.product_id.display_name or '')
-        sheet.write(i, 6, ch.product_uom_id._compute_quantity(
-            ch.product_qty, ch.product_id.uom_id) or '')
+        sheet.write(i, 5, ch.product_id.name or '')
+        sheet.write(i, 6, ch.product_qty or '')
         sheet.write(i, 7, ch.product_id.uom_id.name or '')
         sheet.write(i, 8, ch.product_id.standard_price or '')
         sheet.write(i, 9, ch.x_designator or '')
@@ -69,7 +68,7 @@ class BomStructureXlsx(models.AbstractModel):
         sheet.freeze_panes(2, 0)
         i = 2
         for o in objects:
-            sheet.write(i, 0, o.product_tmpl_id.name or '', bold)
+            sheet.write(i, 0, o.product_tmpl_id.default_code or '', bold)
             sheet.write(i, 1, '', bold)
             sheet.write(i, 2, o.product_id.default_code or '', bold)
             sheet.write(i, 5, o.product_id.name or '', bold)
