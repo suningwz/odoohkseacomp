@@ -5,108 +5,69 @@ from odoo import models, api, fields, _
 from odoo.tools.misc import format_date
 
 
+class report_account_aged_partner(models.AbstractModel):
+    _inherit = "account.aged.partner"
 
-class ReportAccountAgedPartner(models.AbstractModel):
-    _inherit = 'account.aged.partner'
-
-    # new field added by sku
-    invoice_date = fields.Date(string='Invoice Date')
-
-    @api.model
-    def _get_sql(self):
-        """
-        This function is override to meet the client requirement. In below query there is a new field add invoice date
-        """
-        options = self.env.context['report_options']
-        query = ("""
-               SELECT
-                   {move_line_fields},
-                   account_move_line.partner_id AS partner_id,
-                   partner.name AS partner_name,
-                   COALESCE(trust_property.value_text, 'normal') AS partner_trust,
-                   COALESCE(account_move_line.currency_id, journal.currency_id) AS report_currency_id,
-                   account_move_line.payment_id AS payment_id,
-                   COALESCE(account_move_line.date_maturity, account_move_line.date) AS report_date,
-                   account_move_line.expected_pay_date AS expected_pay_date,
-                   move.move_type AS move_type,
-                   move.name AS move_name,
-                   move.invoice_date as invoice_date,
-                   journal.code AS journal_code,
-                   account.name AS account_name,
-                   account.code AS account_code,""" + ','.join([("""
-                   CASE WHEN period_table.period_index = {i}
-                   THEN %(sign)s * ROUND((
-                       account_move_line.balance - COALESCE(SUM(part_debit.amount), 0) + COALESCE(SUM(part_credit.amount), 0)
-                   ) * currency_table.rate, currency_table.precision)
-                   ELSE 0 END AS period{i}""").format(i=i) for i in range(6)]) + """
-               FROM account_move_line
-               JOIN account_move move ON account_move_line.move_id = move.id
-               JOIN account_journal journal ON journal.id = account_move_line.journal_id
-               JOIN account_account account ON account.id = account_move_line.account_id
-               JOIN res_partner partner ON partner.id = account_move_line.partner_id
-               LEFT JOIN ir_property trust_property ON (
-                   trust_property.res_id = 'res.partner,'|| account_move_line.partner_id
-                   AND trust_property.name = 'trust'
-                   AND trust_property.company_id = account_move_line.company_id
-               )
-               JOIN {currency_table} ON currency_table.company_id = account_move_line.company_id
-               LEFT JOIN LATERAL (
-                   SELECT part.amount, part.debit_move_id
-                   FROM account_partial_reconcile part
-                   WHERE part.max_date <= %(date)s
-               ) part_debit ON part_debit.debit_move_id = account_move_line.id
-               LEFT JOIN LATERAL (
-                   SELECT part.amount, part.credit_move_id
-                   FROM account_partial_reconcile part
-                   WHERE part.max_date <= %(date)s
-               ) part_credit ON part_credit.credit_move_id = account_move_line.id
-               JOIN {period_table} ON (
-                   period_table.date_start IS NULL
-                   OR COALESCE(account_move_line.date_maturity, account_move_line.date) <= DATE(period_table.date_start)
-               )
-               AND (
-                   period_table.date_stop IS NULL
-                   OR COALESCE(account_move_line.date_maturity, account_move_line.date) >= DATE(period_table.date_stop)
-               )
-               WHERE account.internal_type = %(account_type)s
-               GROUP BY account_move_line.id, partner.id, trust_property.id, journal.id, move.id, account.id,
-                        period_table.period_index, currency_table.rate, currency_table.precision
-           """).format(
-            move_line_fields=self._get_move_line_fields('account_move_line'),
-            currency_table=self.env['res.currency']._get_query_currency_table(options),
-            period_table=self._get_query_period_table(options),
-        )
-        params = {
-            'account_type': options['filter_account_type'],
-            'sign': 1 if options['filter_account_type'] == 'receivable' else -1,
-            'date': options['date']['date_to'],
-        }
-        return self.env.cr.mogrify(query, params).decode(self.env.cr.connection.encoding)
-
-    @api.model
-    def _get_column_details(self, options):
-        """
-        This function is overrided to add the new column invoice date (invoice_date)
-        """
-        return [
-            self._header_column(),
-            self._field_column('invoice_date'),
-            self._field_column('report_date', name="Due date"),
-            self._field_column('journal_code', name="Journal"),
-            self._field_column('account_name', name="Account"),
-            self._field_column('expected_pay_date'),
-            self._field_column('period0', name=_("As of: %s") % format_date(self.env, options['date']['date_to'])),
-            self._field_column('period1', sortable=True),
-            self._field_column('period2', sortable=True),
-            self._field_column('period3', sortable=True),
-            self._field_column('period4', sortable=True),
-            self._field_column('period5', sortable=True),
-            self._custom_column(  # Avoid doing twice the sub-select in the view
-                name=_('Total'),
-                classes=['number'],
-                formatter=self.format_value,
-                getter=(
-                    lambda v: v['period0'] + v['period1'] + v['period2'] + v['period3'] + v['period4'] + v['period5']),
-                sortable=True,
-            ),
+    def _get_columns_name(self, options):
+        columns = [{}]
+        columns += [
+            {'name': v, 'class': 'number', 'style': 'white-space:nowrap;'}
+            for v in [ _('Invoice Date'), _("JRNL"), _("Account"), _("Reference"), _("Not due on: %s") % format_date(self.env, options['date']['date']),
+                      _("1 - 30"), _("31 - 60"), _("61 - 90"), _("91 - 120"), _("Older"), _("Total")]
         ]
+        return columns
+
+    @api.model
+    def _get_lines(self, options, line_id=None):
+        sign = -1.0 if self.env.context.get('aged_balance') else 1.0
+        lines = []
+        account_types = [self.env.context.get('account_type')]
+        results, total, amls = self.env['report.account.report_agedpartnerbalance'].with_context(include_nullified_amount=True)._get_partner_move_lines(account_types, self._context['date_to'], 'posted', 30)
+        for values in results:
+            if line_id and 'partner_%s' % (values['partner_id'],) != line_id:
+                continue
+            vals = {
+                'id': 'partner_%s' % (values['partner_id'],),
+                'name': values['name'],
+                'level': 2,
+                'columns': [{'name': ''}] * 3 + [{'name': self.format_value(sign * v)} for v in [values['direction'], values['4'],
+                                                                                                 values['3'], values['2'],
+                                                                                                 values['1'], values['0'], values['total']]],
+                'trust': values['trust'],
+                'unfoldable': True,
+                'unfolded': 'partner_%s' % (values['partner_id'],) in options.get('unfolded_lines'),
+            }
+            lines.append(vals)
+            if 'partner_%s' % (values['partner_id'],) in options.get('unfolded_lines'):
+                for line in amls[values['partner_id']]:
+                    aml = line['line']
+                    caret_type = 'account.move'
+                    if aml.invoice_id:
+                        caret_type = 'account.invoice.in' if aml.invoice_id.type in ('in_refund', 'in_invoice') else 'account.invoice.out'
+                    elif aml.payment_id:
+                        caret_type = 'account.payment'
+                    line_date = aml.date_maturity or aml.date
+                    if not self._context.get('no_format'):
+                        line_date = format_date(self.env, line_date)
+                    vals = {
+                        'id': aml.id,
+                        'name': line_date,
+                        'class': 'date',
+                        'caret_options': caret_type,
+                        'level': 4,
+                        'parent_id': 'partner_%s' % (values['partner_id'],),
+                        'columns': [{'name': v} for v in [aml.invoice_id.date_invoice,aml.journal_id.code, aml.account_id.code, self._format_aml_name(aml)]] +\
+                                   [{'name': v} for v in [line['period'] == 6-i and self.format_value(sign * line['amount']) or '' for i in range(7)]],
+                        'action_context': aml.get_action_context(),
+                    }
+                    lines.append(vals)
+        if total and not line_id:
+            total_line = {
+                'id': 0,
+                'name': _('Total'),
+                'class': 'total',
+                'level': 2,
+                'columns': [{'name': ''}] * 3 + [{'name': self.format_value(sign * v)} for v in [total[6], total[4], total[3], total[2], total[1], total[0], total[5]]],
+            }
+            lines.append(total_line)
+        return lines
