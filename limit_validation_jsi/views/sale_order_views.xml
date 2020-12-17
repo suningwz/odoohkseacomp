@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_order_form_limit_validation_jsi" model="ir.ui.view">
+            <field name="name">view.order.form.limit.validation.jsi</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <field name="date_order" position="after">
+                    <field name="is_overdue_limit_end"/>
+                </field>
+                <xpath expr="//button[@id='action_confirm']" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|',('state', 'not in', ['sent']),('x_over_credit_limit','!=',False), ('is_overdue_limit_end', '!=', False)]}</attribute>
+                </xpath>
+                <xpath expr="//button[@id='action_confirm2']" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|',('state', 'not in', ['draft']),'|',('x_over_credit_limit','!=',False),('is_overdue_limit_end','!=',False)]}</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
