@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_picking_form_supply_chain_report_jsi" model="ir.ui.view">
+            <field name="name">view.picking.form.supply.chain.report.jsi</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="quality_control.stock_picking_view_form_inherit_quality"/>
+            <field name="arch" type="xml">
+                <field name="origin" position="after">
+                    <field name="is_overdue_limit_end"/>
+                </field>
+                <xpath expr="//button[@name='button_validate'][hasclass('oe_highlight')]" position="attributes">
+                <attribute name="attrs">{'invisible':['|','|',('x_over_credit_limit','=',True),('quality_check_todo','=',True),('show_validate','!=',True),('is_overdue_limit_end','=',True)]}</attribute>
+                </xpath>
+                <xpath expr="//button[@name='button_validate'][hasclass('o_btn_validate')]" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|','|',('x_over_credit_limit','=',True),('quality_check_todo','=',False),('show_validate','!=',True),('is_overdue_limit_end','=',True)]}</attribute>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>
