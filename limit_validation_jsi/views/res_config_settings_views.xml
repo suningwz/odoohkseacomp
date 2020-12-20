@@ -6,38 +6,23 @@
         <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//div[@id='sale_config_online_confirmation_pay']" position="after">
-                <div class="col-12 col-lg-6 o_setting_box">
+                <div class="col-lg-6 col-12 o_setting_box">
+                    <div class="o_setting_left_pane">
+                        <field name="use_overdue_limit"/>
+                    </div>
                     <div class="o_setting_right_pane">
-                        <span class="o_form_label">Overdue Days</span>
+                        <label for="use_overdue_limit"/>
+                        <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." role="img" aria-label="Values set here are company-specific." groups="base.group_multi_company"/>
                         <div class="text-muted">
-                            Allowed Days for Overdue
-                        </div>
-                        <div class="content-group">
-                            <div class="row mt16">
-                                <field name="allowed_overdue_limit_days" class="col-lg-8 oe_inline"/>
-                            </div><!-- 
-                            <div class="row">
-                                <label for="ebay_zip_code" class="col-lg-4 o_light_label"/>
-                                <field name="ebay_zip_code" class="col-lg-8 oe_inline"/>
+                            Prevent users from validating SO and transfers from partners who are overdue over the folloving amount of days
+                         </div>
+                         <div class="content-group" attrs="{'invisible': [('use_overdue_limit','=',False)]}">
+                            <div class="mt16" >
+                                <field name="allowed_overdue_limit_days" class="oe_inline"/> days
                             </div>
-                            <div class="row">
-                                <label for="ebay_location" class="col-lg-4 o_light_label"/>
-                                <field name="ebay_location" class="col-lg-8 oe_inline"/>
-                            </div> -->
                         </div>
                     </div>
                 </div>
-
-<!-- 
-                <div class="col-12 col-lg-6 o_setting_box">
-                    <div class="o_setting_left_pane"/>
-                    <div class="o_setting_right_pane">
-                        <span class="o_form_label"></span>
-                        <div>
-                            <field name="allowed_overdue_limit_days"/>
-                        </div>
-                    </div>
-                </div> -->
             </xpath>
         </field>
     </record>
