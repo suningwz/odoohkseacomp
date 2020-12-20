@@ -21,9 +21,9 @@ class ResConfigSettings(models.TransientModel):
 class saleOrder(models.Model):
     _inherit = "sale.order"
 
-    is_overdue_limit_end = fields.Boolean('Is Overdue?', compute="_compute_remaining_qty", store="True")
+    is_overdue_limit_end = fields.Boolean('Is Overdue?', compute="_compute_remaining_qty")
 
-    @api.depends('partner_id.commercial_partner_id.unreconciled_aml_ids.date', 'company_id.allowed_overdue_limit_days')
+    @api.depends('partner_id.commercial_partner_id.unreconciled_aml_ids', 'company_id.allowed_overdue_limit_days')
     def _compute_remaining_qty(self):
         for order in self:
             if order.partner_id:
