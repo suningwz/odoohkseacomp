@@ -8,9 +8,9 @@ from odoo import api, fields, models, _
 class StockPicking(models.Model):
     _inherit = "stock.picking"
 
-    is_overdue_limit_end = fields.Boolean('Is Overdue?', compute="_compute_remaining_qty", store="True")
+    is_overdue_limit_end = fields.Boolean('Is Overdue?', compute="_compute_remaining_qty")
 
-    @api.depends('partner_id.commercial_partner_id.unreconciled_aml_ids.date', 'company_id.allowed_overdue_limit_days')
+    @api.depends('partner_id.commercial_partner_id.unreconciled_aml_ids', 'company_id.allowed_overdue_limit_days')
     def _compute_remaining_qty(self):
         for picking in self:
             if picking.partner_id:
