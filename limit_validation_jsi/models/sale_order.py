@@ -13,7 +13,7 @@ class saleOrder(models.Model):
     @api.depends('partner_id.commercial_partner_id.unreconciled_aml_ids', 'company_id.allowed_overdue_limit_days')
     def _compute_remaining_qty(self):
         for order in self:
-            if order.partner_id:
+            if order.partner_id and order.company_id.allowed_overdue_limit_days:
                 today = fields.Date.today()
                 limit_days = order.company_id.allowed_overdue_limit_days
                 date_list = order.partner_id.commercial_partner_id.unreconciled_aml_ids.mapped('date_maturity')
