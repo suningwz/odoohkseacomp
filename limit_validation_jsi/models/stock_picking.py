@@ -11,7 +11,7 @@ class StockPicking(models.Model):
     @api.depends('partner_id.commercial_partner_id.unreconciled_aml_ids', 'company_id.allowed_overdue_limit_days')
     def _compute_remaining_qty(self):
         for picking in self:
-            if picking.partner_id and order.company_id.allowed_overdue_limit_days:
+            if picking.partner_id and picking.company_id.allowed_overdue_limit_days:
                 today = fields.Date.today()
                 limit_days = picking.company_id.allowed_overdue_limit_days
                 date_list = picking.partner_id.commercial_partner_id.unreconciled_aml_ids.mapped('date_maturity')
