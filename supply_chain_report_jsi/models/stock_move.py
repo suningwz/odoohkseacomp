@@ -14,9 +14,9 @@ class StockMove(models.Model):
     _inherit = "stock.move"
 
     commitment_date = fields.Date('Commitment date', compute="_compute_commitment_date", store="True")
-    calc_on_hand_qty = fields.Float('Warehouse QOH', compute="_compute_qty", store="True")
-    calc_forecasted_qty = fields.Float('Warehouse Forecasted', compute="_compute_qty", store="True")
-    run_total = fields.Float('Run Total', compute="_compute_qty", store="True")
+    calc_on_hand_qty = fields.Float('Warehouse QOH', compute="_compute_qty")
+    calc_forecasted_qty = fields.Float('Warehouse Forecasted', compute="_compute_qty")
+    run_total = fields.Float('Run Total', compute="_compute_qty")
     comment = fields.Text('Comments')
     date_internal_transfer = fields.Date('Internal Transfer Date')
 
