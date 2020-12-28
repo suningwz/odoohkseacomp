@@ -11,7 +11,7 @@ class report_account_aged_partner(models.AbstractModel):
         columns = [{}]
         columns += [
             {'name': v, 'class': 'number', 'style': 'white-space:nowrap;'}
-            for v in [_('Invoice Date'), _("JRNL"), _("Payment Terms"), _("Partners"), _("Partner Country"), _("Account"), _("Reference"),
+            for v in [_('Invoice Date'), _("JRNL"), _("Payment Terms"), _("Partner"), _("Partner Country"), _("Account"), _("Reference"),
                       _("Not due on: %s") % format_date(self.env, options['date']['date']),
                       _("1 - 30"), _("31 - 60"), _("61 - 90"), _("91 - 120"), _("Older"), _("Total")]
         ]
